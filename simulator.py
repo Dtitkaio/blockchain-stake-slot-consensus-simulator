@@ -4,7 +4,7 @@ from datetime import datetime
 import numpy as np
 from scipy.stats import binom # type: ignore
 from tqdm import tqdm # type: ignore
-from config import EPOCHS, AUTHORITY_COUNT, TOTAL_REWARD, REWARD_RATIO, STAKE_DISTRIBUTION, SELECTION_STRATEGY, OUTPUT_MODE
+from config import EPOCHS, AUTHORITY_COUNT, TOTAL_REWARD, REWARD_RATIO, STAKE_DISTRIBUTION, SELECTION_STRATEGY, OUTPUT_MODE, SEED
 
 class PoSA_Simulator:
     def __init__(self, stake_distribution, epochs, authority_count, total_reward, reward_ratio, selection_strategy='stake', output_mode='console', seed=None):
@@ -51,8 +51,9 @@ class PoSA_Simulator:
         return np.random.choice(len(self.stake_distribution), self.authority_count, replace=False)
     
     def select_authorities_by_multiplicative_ageing(self):
+        # Strategy 3: Select top N validators based on proofs calculated using stake and multiplicative ageing
         # Generate random hash for each validator (simulated with random numbers for simplicity)
-        random_hashes = np.random.rand()
+        random_hashes = np.random.rand(len(self.stake_distribution))
         total_stake = np.sum(self.stake_distribution)
         # Calculate proofs based on the formula provided
         proofs = random_hashes * (self.stake_distribution / total_stake) * (1 + self.ageing)
@@ -64,8 +65,9 @@ class PoSA_Simulator:
         return selected_indices
     
     def select_authorities_by_exponential_ageing(self):
+        # Strategy 4: Select top N validators based on proofs calculated using stake and exponential ageing
         # Generate a random hash for each validator (simulated with random numbers for simplicity)
-        random_hashes = np.random.rand()
+        random_hashes = np.random.rand(len(self.stake_distribution))
         total_stake = np.sum(self.stake_distribution)
         
         # Calculate proofs based on the modified formula with exponential ageing
@@ -81,7 +83,8 @@ class PoSA_Simulator:
         return selected_indices
     
     def select_authorities_by_binomial_ageing(self):
-        random_hashes = np.random.rand()
+        # Strategy 5: Select top N validators based on proofs calculated using stake and binomial ageing
+        random_hashes = np.random.rand(len(self.stake_distribution))
         total_stake = np.sum(self.stake_distribution)
         proofs = np.zeros(len(self.stake_distribution))
         
@@ -127,7 +130,8 @@ class PoSA_Simulator:
                 writer.writerow([self.epochs, self.authority_count, self.total_reward, self.reward_ratio, self.selection_strategy])
                 writer.writerow([])  # Blank row for separation
                 # Write the data header
-                writer.writerow(['Epoch', 'Stake Distribution'])
+                validator_headers = [f"Validator{i+1}" for i in range(len(self.stake_distribution))]
+                writer.writerow(['Epoch', *validator_headers])
                 self._run_simulation(writer)
         else:
             print('Simulation Settings:')
@@ -138,12 +142,11 @@ class PoSA_Simulator:
         for epoch in tqdm(range(self.epochs), desc="Simulating Epochs"):
             authority_indices = self.select_authorities()
             self.distribute_rewards(authority_indices)
-            stake_distribution_str = ', '.join(map(str, self.stake_distribution))
             if writer:
-                writer.writerow([epoch + 1, stake_distribution_str])
+                writer.writerow([epoch + 1, *self.stake_distribution])
             else:
                 print(f"Epoch {epoch + 1}: Stake Distribution: {self.stake_distribution}")
     
 # Run the simulation
-simulator = PoSA_Simulator(STAKE_DISTRIBUTION, EPOCHS, AUTHORITY_COUNT, TOTAL_REWARD, REWARD_RATIO, selection_strategy=SELECTION_STRATEGY, output_mode=OUTPUT_MODE)
+simulator = PoSA_Simulator(STAKE_DISTRIBUTION, EPOCHS, AUTHORITY_COUNT, TOTAL_REWARD, REWARD_RATIO, selection_strategy=SELECTION_STRATEGY, output_mode=OUTPUT_MODE, seed=SEED)
 simulator.simulate()
