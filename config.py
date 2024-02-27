@@ -14,3 +14,9 @@ REWARD_RATIO = [0.8, 0.2]
 
 # Total reward distributed per epoch
 TOTAL_REWARD = 10
+
+# Selection strategy for authority validators
+SELECTION_STRATEGY = 'binomial_ageing' # 'stake', 'multiplicative_ageing', 'binomial_ageing', 'exponential_ageing', 'random'
+
+# Output mode for simulation results
+OUTPUT_MODE = 'console'  # 'console', 'file'
