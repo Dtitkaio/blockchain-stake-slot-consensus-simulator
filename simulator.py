@@ -129,7 +129,7 @@ class PoSA_Simulator:
             self._run_simulation()
 
     def _run_simulation(self, writer=None):
-        for epoch in range(self.epochs):
+        for epoch in tqdm(range(self.epochs), desc="Simulating Epochs"):
             authority_indices = self.select_authorities()
             self.distribute_rewards(authority_indices)
             stake_distribution_str = ', '.join(map(str, self.stake_distribution))
