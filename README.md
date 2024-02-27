@@ -40,7 +40,7 @@ PoSA simulator は、Proof of Stake and Authority (PoSA) を使用して異な�
 3. シミュレータを実行します。
 
    ```
-   python posa_simulator.py
+   python simulator.py
    ```
 
 4. 出力モードをファイルまたは標準出力に設定することができます。ファイル出力を選択した場合、結果は `output/` ディレクトリ内のタイムスタンプ付きの CSV ファイルに保存されます。
