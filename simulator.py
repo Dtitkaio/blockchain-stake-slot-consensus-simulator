@@ -132,10 +132,12 @@ class PoSA_Simulator:
                 # Write the data header
                 validator_headers = [f"Validator{i+1}" for i in range(len(self.stake_distribution))]
                 writer.writerow(['Epoch', *validator_headers])
+                writer.writerow(['0', *self.stake_distribution])
                 self._run_simulation(writer)
         else:
             print('Simulation Settings:')
             print(f'Epochs: {self.epochs}, Authority Count: {self.authority_count}, Total Reward: {self.total_reward}, Reward Ratio: {self.reward_ratio}, Selection Strategy: {self.selection_strategy}\n')
+            print(f"Initial Stake Distribution: {self.stake_distribution}")
             self._run_simulation()
 
     def _run_simulation(self, writer=None):
