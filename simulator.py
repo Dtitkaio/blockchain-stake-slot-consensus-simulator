@@ -3,10 +3,11 @@ import os
 from datetime import datetime
 import numpy as np
 from scipy.stats import binom # type: ignore
+from tqdm import tqdm # type: ignore
 from config import EPOCHS, AUTHORITY_COUNT, TOTAL_REWARD, REWARD_RATIO, STAKE_DISTRIBUTION, SELECTION_STRATEGY, OUTPUT_MODE
 
 class PoSA_Simulator:
-    def __init__(self, stake_distribution, epochs, authority_count, total_reward, reward_ratio, selection_strategy='stake', output_mode='console'):
+    def __init__(self, stake_distribution, epochs, authority_count, total_reward, reward_ratio, selection_strategy='stake', output_mode='console', seed=None):
         self.stake_distribution = np.array(stake_distribution)
         self.epochs = epochs
         self.current_epoch = 0  # Initialize current epoch
@@ -35,6 +36,11 @@ class PoSA_Simulator:
             self.output_file_path = f'{output_dir}/simulation_results_{timestamp}.csv'
         else:
             self.output_file_path = None
+        self.seed = seed
+        if self.seed is not None:
+            np.random.seed(self.seed)
+        else:
+            np.random.seed(len(self.stake_distribution))
     
     def select_authorities_by_stake(self):
         # Strategy 1: Select top N validators based on stake
@@ -46,7 +52,7 @@ class PoSA_Simulator:
     
     def select_authorities_by_multiplicative_ageing(self):
         # Generate random hash for each validator (simulated with random numbers for simplicity)
-        random_hashes = np.random.rand(len(self.stake_distribution))
+        random_hashes = np.random.rand()
         total_stake = np.sum(self.stake_distribution)
         # Calculate proofs based on the formula provided
         proofs = random_hashes * (self.stake_distribution / total_stake) * (1 + self.ageing)
@@ -59,7 +65,7 @@ class PoSA_Simulator:
     
     def select_authorities_by_exponential_ageing(self):
         # Generate a random hash for each validator (simulated with random numbers for simplicity)
-        random_hashes = np.random.rand(len(self.stake_distribution))
+        random_hashes = np.random.rand()
         total_stake = np.sum(self.stake_distribution)
         
         # Calculate proofs based on the modified formula with exponential ageing
@@ -75,7 +81,7 @@ class PoSA_Simulator:
         return selected_indices
     
     def select_authorities_by_binomial_ageing(self):
-        random_hashes = np.random.rand(len(self.stake_distribution))
+        random_hashes = np.random.rand()
         total_stake = np.sum(self.stake_distribution)
         proofs = np.zeros(len(self.stake_distribution))
         
