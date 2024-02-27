@@ -14,6 +14,10 @@ class PoSA_Simulator:
             self.select_authorities = self.select_authorities_by_stake
         elif selection_strategy == 'random':
             self.select_authorities = self.select_authorities_randomly
+        elif selection_strategy == 'multiplicative_ageing':
+            self.select_authorities = self.select_authorities_by_multiplicative_ageing
+        elif selection_strategy == 'exponential_ageing':
+            self.select_authorities = self.select_authorities_by_exponential_ageing
         else:
             raise ValueError("Unknown selection strategy")
     
@@ -25,7 +29,7 @@ class PoSA_Simulator:
         # Strategy 2: Random selection
         return np.random.choice(len(self.stake_distribution), self.authority_count, replace=False)
     
-    def select_authorities_by_ageing(self):
+    def select_authorities_by_multiplicative_ageing(self):
         # Generate random hash for each validator (simulated with random numbers for simplicity)
         random_hashes = np.random.rand(len(self.stake_distribution))
         total_stake = np.sum(self.stake_distribution)
@@ -36,6 +40,23 @@ class PoSA_Simulator:
         # Update ageing: increase by 1 for all, reset to 0 for selected validators
         self.ageing += 1
         self.ageing[selected_indices] = 0
+        return selected_indices
+    
+    def select_authorities_by_exponential_ageing(self):
+        # Generate a random hash for each validator (simulated with random numbers for simplicity)
+        random_hashes = np.random.rand(len(self.stake_distribution))
+        total_stake = np.sum(self.stake_distribution)
+        
+        # Calculate proofs based on the modified formula with exponential ageing
+        proofs = random_hashes * (self.stake_distribution / total_stake) * np.exp(self.ageing)
+        
+        # Select top N validators based on proofs
+        selected_indices = np.argsort(-proofs)[:self.authority_count]
+        
+        # Update ageing: increase by 1 for all, reset to 0 for selected validators
+        self.ageing += 1
+        self.ageing[selected_indices] = 0
+        
         return selected_indices
     
     def distribute_rewards(self, authority_indices):
@@ -59,6 +80,6 @@ class PoSA_Simulator:
             self.distribute_rewards(authority_indices)
             print(f"Epoch {epoch + 1}: Stake Distribution: {self.stake_distribution}")
     
-# Example usage
+# Run the simulation
 simulator = PoSA_Simulator(STAKE_DISTRIBUTION, EPOCHS, AUTHORITY_COUNT, TOTAL_REWARD, REWARD_RATIO)
 simulator.simulate()
