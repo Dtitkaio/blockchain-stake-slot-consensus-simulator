@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.stats import binom # type: ignore
 from config import EPOCHS, AUTHORITY_COUNT, TOTAL_REWARD, REWARD_RATIO, STAKE_DISTRIBUTION
 
 class PoSA_Simulator:
@@ -12,8 +13,8 @@ class PoSA_Simulator:
         self.reward_ratio = reward_ratio
         if selection_strategy == 'stake':
             self.select_authorities = self.select_authorities_by_stake
-        elif selection_strategy == 'random':
-            self.select_authorities = self.select_authorities_randomly
+        elif selection_strategy == 'binomial_ageing':
+            self.select_authorities = self.select_authorities_by_binomial_ageing
         elif selection_strategy == 'multiplicative_ageing':
             self.select_authorities = self.select_authorities_by_multiplicative_ageing
         elif selection_strategy == 'exponential_ageing':
@@ -59,6 +60,28 @@ class PoSA_Simulator:
         
         return selected_indices
     
+    def select_authorities_by_binomial_ageing(self):
+        random_hashes = np.random.rand(len(self.stake_distribution))
+        total_stake = np.sum(self.stake_distribution)
+        proofs = np.zeros(len(self.stake_distribution))
+        
+        for i, stake in enumerate(self.stake_distribution):
+            ciN = self.ageing[i] * AUTHORITY_COUNT  # c_i * N
+            stake_ratio = stake / total_stake
+            
+            # Calculate the sum of binomial probabilities for the range [1, ciN]
+            binom_sum = sum([binom.pmf(k, ciN, stake_ratio) for k in range(1, int(ciN) + 1)])
+            
+            proofs[i] = random_hashes[i] * binom_sum
+        
+        selected_indices = np.argsort(-proofs)[:self.authority_count]
+        
+        # Update ageing: increase by 1 for all, reset to 0 for selected validators
+        self.ageing += 1
+        self.ageing[selected_indices] = 0
+        
+        return selected_indices
+    
     def distribute_rewards(self, authority_indices):
         total_stakes = np.sum(self.stake_distribution)
         authority_rewards = self.total_reward * self.reward_ratio[0]
@@ -81,5 +104,5 @@ class PoSA_Simulator:
             print(f"Epoch {epoch + 1}: Stake Distribution: {self.stake_distribution}")
     
 # Run the simulation
-simulator = PoSA_Simulator(STAKE_DISTRIBUTION, EPOCHS, AUTHORITY_COUNT, TOTAL_REWARD, REWARD_RATIO)
+simulator = PoSA_Simulator(STAKE_DISTRIBUTION, EPOCHS, AUTHORITY_COUNT, TOTAL_REWARD, REWARD_RATIO, selection_strategy='binomial_ageing')
 simulator.simulate()
