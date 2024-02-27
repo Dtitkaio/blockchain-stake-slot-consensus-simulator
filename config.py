@@ -19,4 +19,7 @@ TOTAL_REWARD = 10
 SELECTION_STRATEGY = 'binomial_ageing' # 'stake', 'multiplicative_ageing', 'binomial_ageing', 'exponential_ageing', 'random'
 
 # Output mode for simulation results
-OUTPUT_MODE = 'console'  # 'console', 'file'
+OUTPUT_MODE = 'file'  # 'console', 'file'
+
+# Seed for random number generation
+SEED = 42
