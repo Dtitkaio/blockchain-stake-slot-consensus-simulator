@@ -1,9 +1,12 @@
+import csv
+import os
+from datetime import datetime
 import numpy as np
 from scipy.stats import binom # type: ignore
-from config import EPOCHS, AUTHORITY_COUNT, TOTAL_REWARD, REWARD_RATIO, STAKE_DISTRIBUTION
+from config import EPOCHS, AUTHORITY_COUNT, TOTAL_REWARD, REWARD_RATIO, STAKE_DISTRIBUTION, SELECTION_STRATEGY, OUTPUT_MODE
 
 class PoSA_Simulator:
-    def __init__(self, stake_distribution, epochs, authority_count, total_reward, reward_ratio, selection_strategy='stake'):
+    def __init__(self, stake_distribution, epochs, authority_count, total_reward, reward_ratio, selection_strategy='stake', output_mode='console'):
         self.stake_distribution = np.array(stake_distribution)
         self.epochs = epochs
         self.current_epoch = 0  # Initialize current epoch
@@ -11,16 +14,27 @@ class PoSA_Simulator:
         self.ageing = np.zeros_like(self.stake_distribution)  # Initialize ageing for each validator
         self.total_reward = total_reward
         self.reward_ratio = reward_ratio
-        if selection_strategy == 'stake':
+        self.selection_strategy = selection_strategy
+        if self.selection_strategy == 'stake':
             self.select_authorities = self.select_authorities_by_stake
-        elif selection_strategy == 'binomial_ageing':
+        elif self.selection_strategy == 'binomial_ageing':
             self.select_authorities = self.select_authorities_by_binomial_ageing
-        elif selection_strategy == 'multiplicative_ageing':
+        elif self.selection_strategy == 'multiplicative_ageing':
             self.select_authorities = self.select_authorities_by_multiplicative_ageing
-        elif selection_strategy == 'exponential_ageing':
+        elif self.selection_strategy == 'exponential_ageing':
             self.select_authorities = self.select_authorities_by_exponential_ageing
+        elif self.selection_strategy == 'random':
+            self.select_authorities = self.select_authorities_randomly
         else:
             raise ValueError("Unknown selection strategy")
+        self.output_mode = output_mode
+        if self.output_mode == 'file':
+            output_dir = 'output'
+            os.makedirs(output_dir, exist_ok=True)
+            timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+            self.output_file_path = f'{output_dir}/simulation_results_{timestamp}.csv'
+        else:
+            self.output_file_path = None
     
     def select_authorities_by_stake(self):
         # Strategy 1: Select top N validators based on stake
@@ -98,11 +112,32 @@ class PoSA_Simulator:
             self.stake_distribution[idx] += (candidate_rewards * (self.stake_distribution[idx] / (total_stakes - np.sum(authority_stakes))))
     
     def simulate(self):
+        if self.output_mode == 'file':
+            with open(self.output_file_path, 'w', newline='') as file:
+                writer = csv.writer(file)
+                # Write simulation settings header
+                writer.writerow(['Simulation Settings'])
+                writer.writerow(['Epochs', 'Authority Count', 'Total Reward', 'Reward Ratio', 'Selection Strategy'])
+                writer.writerow([self.epochs, self.authority_count, self.total_reward, self.reward_ratio, self.selection_strategy])
+                writer.writerow([])  # Blank row for separation
+                # Write the data header
+                writer.writerow(['Epoch', 'Stake Distribution'])
+                self._run_simulation(writer)
+        else:
+            print('Simulation Settings:')
+            print(f'Epochs: {self.epochs}, Authority Count: {self.authority_count}, Total Reward: {self.total_reward}, Reward Ratio: {self.reward_ratio}, Selection Strategy: {self.selection_strategy}\n')
+            self._run_simulation()
+
+    def _run_simulation(self, writer=None):
         for epoch in range(self.epochs):
             authority_indices = self.select_authorities()
             self.distribute_rewards(authority_indices)
-            print(f"Epoch {epoch + 1}: Stake Distribution: {self.stake_distribution}")
+            stake_distribution_str = ', '.join(map(str, self.stake_distribution))
+            if writer:
+                writer.writerow([epoch + 1, stake_distribution_str])
+            else:
+                print(f"Epoch {epoch + 1}: Stake Distribution: {self.stake_distribution}")
     
 # Run the simulation
-simulator = PoSA_Simulator(STAKE_DISTRIBUTION, EPOCHS, AUTHORITY_COUNT, TOTAL_REWARD, REWARD_RATIO, selection_strategy='binomial_ageing')
+simulator = PoSA_Simulator(STAKE_DISTRIBUTION, EPOCHS, AUTHORITY_COUNT, TOTAL_REWARD, REWARD_RATIO, selection_strategy=SELECTION_STRATEGY, output_mode=OUTPUT_MODE)
 simulator.simulate()
