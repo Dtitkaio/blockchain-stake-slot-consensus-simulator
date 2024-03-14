@@ -105,7 +105,7 @@ class PoSA_Simulator:
         
         return selected_indices
     
-    def distribute_rewards(self, authority_indices):
+    def simple_distribute_rewards(self, authority_indices):
         total_stakes = np.sum(self.stake_distribution)
         authority_rewards = self.total_reward * self.reward_ratio[0]
         candidate_rewards = self.total_reward * self.reward_ratio[1]
@@ -119,6 +119,29 @@ class PoSA_Simulator:
         candidate_indices = [i for i in range(len(self.stake_distribution)) if i not in authority_indices]
         for idx in candidate_indices:
             self.stake_distribution[idx] += (candidate_rewards * (self.stake_distribution[idx] / (total_stakes - np.sum(authority_stakes))))
+    
+    def distribute_rewards(self, authority_indices):
+        total_authority_stakes = np.sum(self.stake_distribution[authority_indices])
+        
+        # Calculating the rewards
+        even_authority_rewards = self.total_reward * 0.5 / len(authority_indices)  # 50% evenly among authority validators
+        proportional_authority_rewards = self.total_reward * 0.4  # 40% proportional to stakes among authority validators
+        candidate_rewards = self.total_reward * 0.1  # 10% proportional to stakes among candidate validators
+        
+        # Distributing 50% of rewards evenly among authority validators
+        for idx in authority_indices:
+            self.stake_distribution[idx] += even_authority_rewards
+        
+        # Distributing 40% of rewards among authority validators based on their stakes
+        for idx in authority_indices:
+            self.stake_distribution[idx] += (proportional_authority_rewards * (self.stake_distribution[idx] / total_authority_stakes))
+        
+        # Distributing 10% of rewards among candidate validators based on their stakes
+        candidate_indices = [i for i in range(len(self.stake_distribution)) if i not in authority_indices]
+        total_candidate_stakes = np.sum(self.stake_distribution[candidate_indices])
+        for idx in candidate_indices:
+            self.stake_distribution[idx] += (candidate_rewards * (self.stake_distribution[idx] / total_candidate_stakes))
+
     
     def simulate(self):
         if self.output_mode == 'file':
