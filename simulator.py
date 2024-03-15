@@ -7,6 +7,34 @@ from tqdm import tqdm # type: ignore
 from config import EPOCHS, AUTHORITY_COUNT, TOTAL_REWARD, REWARD_RATIO, STAKE_DISTRIBUTION, SELECTION_STRATEGY, OUTPUT_MODE, SEED
 
 class PoSA_Simulator:
+    """
+    A simulator for the Proof of Stake Authority (PoSA) consensus mechanism. This simulator
+    models the process of selecting authority validators, distributing rewards, and tracking
+    the evolution of stake distribution over multiple epochs.
+
+    Attributes:
+        stake_distribution (np.array): An array representing the initial stake of each validator.
+        selection_count (np.array): An array tracking the number of times each validator has been selected as an authority validator.
+        epochs (int): The total number of epochs to simulate.
+        current_epoch (int): Tracks the current epoch in the simulation.
+        authority_count (int): The number of validators to be selected as authorities in each epoch.
+        ageing (np.array): An array tracking the number of epochs since each validator was last selected as an authority.
+        total_reward (float): The total reward distributed to validators in each epoch.
+        reward_ratio (list or tuple): The ratio of rewards distributed between authority and candidate validators.
+        selection_strategy (str): The strategy used for selecting authority validators. Possible values
+                                   include 'stake', 'binomial_ageing', 'multiplicative_ageing',
+                                   'exponential_ageing', and 'random'.
+        selection_count (np.array): An array counting how many times each validator has been selected as an authority.
+        output_mode (str): Determines whether the simulation results are written to a file or printed to the console.
+        output_file_path (str): The file path for saving the simulation results, applicable if output_mode is 'file'.
+
+    Methods:
+        simulate(): Runs the simulation for the specified number of epochs, tracking the stake distribution
+                    and selection count, and outputs the results according to the specified mode.
+        _run_simulation(writer=None): A helper method to conduct the simulation, updating stake distribution and
+                                       selection counts, and writing or printing the results after each epoch.
+    """
+
     def __init__(self, stake_distribution, epochs, authority_count, total_reward, reward_ratio, selection_strategy='stake', output_mode='console', seed=None):
         self.stake_distribution = np.array(stake_distribution)
         self.selection_count = np.zeros_like(self.stake_distribution, dtype=int)
