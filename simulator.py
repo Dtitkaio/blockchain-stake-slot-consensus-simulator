@@ -9,6 +9,7 @@ from config import EPOCHS, AUTHORITY_COUNT, TOTAL_REWARD, REWARD_RATIO, STAKE_DI
 class PoSA_Simulator:
     def __init__(self, stake_distribution, epochs, authority_count, total_reward, reward_ratio, selection_strategy='stake', output_mode='console', seed=None):
         self.stake_distribution = np.array(stake_distribution)
+        self.selection_count = np.zeros_like(self.stake_distribution, dtype=int)
         self.epochs = epochs
         self.current_epoch = 0  # Initialize current epoch
         self.authority_count = authority_count
@@ -167,10 +168,18 @@ class PoSA_Simulator:
         for epoch in tqdm(range(self.epochs), desc="Simulating Epochs"):
             authority_indices = self.select_authorities()
             self.distribute_rewards(authority_indices)
+            self.selection_count[authority_indices] += 1
             if writer:
                 writer.writerow([epoch + 1, *self.stake_distribution])
             else:
                 print(f"Epoch {epoch + 1}: Stake Distribution: {self.stake_distribution}")
+        
+        if writer:
+            writer.writerow([])  # Blank row for separation
+            writer.writerow(['Final Selection Count', *self.selection_count])
+        else:
+            print("\n") # Blank line for separation
+            print(f"Final Selection Count: {self.selection_count}")
     
 # Run the simulation
 simulator = PoSA_Simulator(STAKE_DISTRIBUTION, EPOCHS, AUTHORITY_COUNT, TOTAL_REWARD, REWARD_RATIO, selection_strategy=SELECTION_STRATEGY, output_mode=OUTPUT_MODE, seed=SEED)
