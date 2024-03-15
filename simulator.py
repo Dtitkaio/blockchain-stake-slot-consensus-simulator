@@ -243,6 +243,12 @@ class PoSA_Simulator:
         stake_ratios = stake_ratios[stake_ratios > 0]
         entropy = -np.sum(stake_ratios * np.log(stake_ratios))
         return entropy
+    
+    def calculate_selection_std_dev(self):
+        return np.std(self.selection_count)
+    
+    def calculate_selection_percentiles(self):
+        return np.percentile(self.selection_count, [25, 50, 75, 90])
 
     def write_indices_to_output(self, writer=None):
         percentiles = self.calculate_percentiles()
@@ -251,11 +257,14 @@ class PoSA_Simulator:
         nakamoto_coeff = self.calculate_nakamoto_coefficient()
         entropy_val = self.calculate_entropy()
 
+        selection_count_std_dev = self.calculate_selection_std_dev()
+        selection_count_percentiles = self.calculate_selection_percentiles()
+
         if writer:
-            writer.writerow(['Decentralization Indices', '25th', '50th', '75th', '90th', 'Std Dev', 'Gini', 'Nakamoto', 'Entropy'])
-            writer.writerow(['Values', *percentiles, std_dev, gini_coeff, nakamoto_coeff, entropy_val])
+            writer.writerow(['Decentralization Indices', '25th', '50th', '75th', '90th', 'Std Dev', 'Gini', 'Nakamoto', 'Entropy', 'Selection Count Std Dev', 'Selection count 25th', '50th', '75th', '90th'])
+            writer.writerow(['Values', *percentiles, std_dev, gini_coeff, nakamoto_coeff, entropy_val, selection_count_std_dev, *selection_count_percentiles])
         else:
-            print(f"Decentralization Indices:\nPercentiles (25th, 50th, 75th, 90th): {percentiles}\nStandard Deviation: {std_dev}\nGini Coefficient: {gini_coeff}\nNakamoto Coefficient: {nakamoto_coeff}\nEntropy: {entropy_val}")
+            print(f"Decentralization Indices:\nPercentiles (25th, 50th, 75th, 90th): {percentiles}\nStandard Deviation: {std_dev}\nGini Coefficient: {gini_coeff}\nNakamoto Coefficient: {nakamoto_coeff}\nEntropy: {entropy_val}\nSelection Count Standard Deviation: {selection_count_std_dev}\nSelection Count Percentiles (25th, 50th, 75th, 90th): {selection_count_percentiles}")
 
     
 # Run the simulation
