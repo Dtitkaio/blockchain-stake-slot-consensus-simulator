@@ -178,8 +178,8 @@ class PoSA_Simulator:
                 writer = csv.writer(file)
                 # Write simulation settings header
                 writer.writerow(['Simulation Settings'])
-                writer.writerow(['Epochs', 'Authority Count', 'Total Reward', 'Reward Ratio', 'Selection Strategy'])
-                writer.writerow([self.epochs, self.authority_count, self.total_reward, self.reward_ratio, self.selection_strategy])
+                writer.writerow(['Epochs', 'Authority Count', 'Total Reward', 'Reward Ratio', 'Selection Strategy', 'Seed'])
+                writer.writerow([self.epochs, self.authority_count, self.total_reward, self.reward_ratio, self.selection_strategy, self.seed])
                 writer.writerow([])  # Blank row for separation
                 # Write the data header
                 validator_headers = [f"Validator{i+1}" for i in range(len(self.stake_distribution))]
@@ -213,11 +213,11 @@ class PoSA_Simulator:
             print("\n") # Blank line for separation
             self.write_indices_to_output()
     
-    def calculate_percentiles(self):
-        return np.percentile(self.stake_distribution, [25, 50, 75, 90])
+    def calculate_percentiles(self, stakes):
+        return np.percentile(stakes, [25, 50, 75, 90])
 
-    def calculate_standard_deviation(self):
-        return np.std(self.stake_distribution)
+    def calculate_standard_deviation(self, stakes):
+        return np.std(stakes)
 
     def calculate_gini_coefficient(self, stakes):
         # Sort stakes in ascending order
@@ -230,10 +230,10 @@ class PoSA_Simulator:
         gini = (np.sum((2 * index - n - 1) * sorted_stakes)) / (n * np.sum(sorted_stakes))
         return gini
 
-    def calculate_nakamoto_coefficient(self):
+    def calculate_nakamoto_coefficient(self, stakes):
         # Placeholder for Nakamoto coefficient calculation
-        sorted_stakes = np.sort(self.stake_distribution)
-        cumulative_stakes = np.cumsum(sorted_stakes) / np.sum(self.stake_distribution)
+        sorted_stakes = np.sort(stakes)
+        cumulative_stakes = np.cumsum(sorted_stakes) / np.sum(stakes)
         return np.where(cumulative_stakes > 0.5)[0][0] + 1
 
     def calculate_entropy(self, stakes):
@@ -243,22 +243,16 @@ class PoSA_Simulator:
         stake_ratios = stake_ratios[stake_ratios > 0]
         entropy = -np.sum(stake_ratios * np.log(stake_ratios))
         return entropy
-    
-    def calculate_selection_std_dev(self):
-        return np.std(self.selection_count)
-    
-    def calculate_selection_percentiles(self):
-        return np.percentile(self.selection_count, [25, 50, 75, 90])
 
     def write_indices_to_output(self, writer=None):
-        percentiles = self.calculate_percentiles()
-        std_dev = self.calculate_standard_deviation()
-        gini_coeff = self.calculate_gini_coefficient()
-        nakamoto_coeff = self.calculate_nakamoto_coefficient()
-        entropy_val = self.calculate_entropy()
+        percentiles = self.calculate_percentiles(self.stake_distribution)
+        std_dev = self.calculate_standard_deviation(self.stake_distribution)
+        gini_coeff = self.calculate_gini_coefficient(self.stake_distribution)
+        nakamoto_coeff = self.calculate_nakamoto_coefficient(self.stake_distribution)
+        entropy_val = self.calculate_entropy(self.stake_distribution)
 
-        selection_count_std_dev = self.calculate_selection_std_dev()
-        selection_count_percentiles = self.calculate_selection_percentiles()
+        selection_count_std_dev = self.calculate_standard_deviation(self.selection_count)
+        selection_count_percentiles = self.calculate_percentiles(self.selection_count)
 
         if writer:
             writer.writerow(['Decentralization Indices', '25th', '50th', '75th', '90th', 'Std Dev', 'Gini', 'Nakamoto', 'Entropy', 'Selection Count Std Dev', 'Selection count 25th', '50th', '75th', '90th'])
