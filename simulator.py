@@ -47,6 +47,8 @@ class PoSA_Simulator:
         self.selection_strategy = selection_strategy
         if self.selection_strategy == 'stake':
             self.select_authorities = self.select_authorities_by_stake
+        elif self.selection_strategy == 'linear':
+            self.select_authorities = self.select_authorities_by_stake_random
         elif self.selection_strategy == 'binomial_ageing':
             self.select_authorities = self.select_authorities_by_binomial_ageing
         elif self.selection_strategy == 'multiplicative_ageing':
@@ -62,7 +64,7 @@ class PoSA_Simulator:
             output_dir = 'output'
             os.makedirs(output_dir, exist_ok=True)
             timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-            self.output_file_path = f'{output_dir}/simulation_results_{timestamp}.csv'
+            self.output_file_path = f'{output_dir}/{self.selection_strategy}_simulation_results_{timestamp}.csv'
         else:
             self.output_file_path = None
         self.seed = seed
@@ -75,9 +77,15 @@ class PoSA_Simulator:
         # Strategy 1: Select top N validators based on stake
         return np.argsort(-self.stake_distribution)[:self.authority_count]
     
-    def select_authorities_randomly(self):
-        # Strategy 2: Random selection
-        return np.random.choice(len(self.stake_distribution), self.authority_count, replace=False)
+    def select_authorities_by_stake_random(self):
+        # Strategy 2: Select top N validators randomly in proportion to their stake
+        random_hashes = np.random.rand(len(self.stake_distribution))
+        total_stake = np.sum(self.stake_distribution)
+        # Calculate proofs based on stake and random hashes
+        proofs = random_hashes * (self.stake_distribution / total_stake)
+        # Select top N validators based on proofs
+        selected_indices = np.argsort(-proofs)[:self.authority_count]
+        return selected_indices
     
     def select_authorities_by_multiplicative_ageing(self):
         # Strategy 3: Select top N validators based on proofs calculated using stake and multiplicative ageing
@@ -133,6 +141,10 @@ class PoSA_Simulator:
         self.ageing[selected_indices] = 0
         
         return selected_indices
+    
+    def select_authorities_randomly(self):
+        # Strategy 6: Random selection
+        return np.random.choice(len(self.stake_distribution), self.authority_count, replace=False)
     
     def simple_distribute_rewards(self, authority_indices):
         total_stakes = np.sum(self.stake_distribution)
@@ -231,8 +243,7 @@ class PoSA_Simulator:
         return gini
 
     def calculate_nakamoto_coefficient(self, stakes):
-        # Placeholder for Nakamoto coefficient calculation
-        sorted_stakes = np.sort(stakes)
+        sorted_stakes = np.sort(stakes)[::-1]
         cumulative_stakes = np.cumsum(sorted_stakes) / np.sum(stakes)
         return np.where(cumulative_stakes > 0.5)[0][0] + 1
 
