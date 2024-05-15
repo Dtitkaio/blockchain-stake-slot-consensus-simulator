@@ -17,6 +17,7 @@ PoSA simulator は、Proof of Stake and Authority (PoSA) を使用して異な�
 - `STAKE_DISTRIBUTION`: 初期ステーク分布。
 - `SELECTION_STRATEGY`: Authority validators の選択方法を指定できます。利用可能な選択戦略は以下の通りです：
   - `stake`: ステーク量に基づいて上位のバリデータを選択します。
+  - `linear`: ステーク量に比例して確率的にバリデータを選出します。
   - `random`: 完全にランダムにバリデータを選択します。ステーク量に関係なく、全バリデータが同じ確率で選出されます。
   - `multiplicative_ageing`: ステーク量と stake ageing（選択されていない期間）の積に基づいてバリデータを選択します。
   - `exponential_ageing`: ステーク量と stake ageing の指数関数に基づいてバリデータを選択します。`multiplicative_ageing`よりも ageing の影響度が高くなります。
