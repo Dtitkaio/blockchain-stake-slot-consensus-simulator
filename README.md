@@ -1,55 +1,45 @@
-# consensus-simulator-of-PoSA
+# Consensus Simulator for Proof of Stake and Authority (PoSA)
 
-PoSA simulator は、Proof of Stake and Authority (PoSA) を使用して異なる Authority Validators の選出アルゴリズムを使った際のステークの変化をシミュレートするためのツールです。このシミュレータは、異なるバリデータ選択戦略がネットワークの分散性にどのように影響するかを分析するためのツールになります。
+The PoSA simulator is a tool that simulates the changes in stake distribution when using different authority validator selection algorithms in a Proof of Stake and Authority (PoSA) consensus mechanism. This simulator is a tool to analyze how different validator selection strategies impact the network's decentralization.
 
-## 目的
+## Purpose
+The primary purpose of this simulator is to track the changes in validator stake over epochs and observe the impact that different validator selection strategies have on the stake distribution among validators.
 
-このシミュレータの主な目的は、バリデータのステーク量の変化をエポックごとに追跡し、異なるバリデータ選択戦略が Validators 間のステーク分布に与える影響を観察することです。
+## Configuration
+The simulator's configuration is managed in the `config.py` file. The main configuration options are:
 
-## 設定
+- `EPOCHS`: The number of epochs to simulate.
+- `AUTHORITY_COUNT`: The number of authority validators per epoch.
+- `TOTAL_REWARD`: The total reward amount per epoch.
+- `STAKE_DISTRIBUTION`: The initial stake distribution.
+- `SELECTION_STRATEGY`: The method to select authority validators. Available strategies include:
+  - `stake`: Select the top validators based on their stake.
+  - `linear`: Probabilistically select validators proportional to their stake.
+  - `random`: Randomly select validators, regardless of their stake.
+  - `multiplicative_ageing`: Select validators based on a combination of their stake and the duration they have not been selected.
+  - `exponential_ageing`: Select validators based on a combination of their stake and the duration they have not been selected, with a higher emphasis on the ageing factor compared to `multiplicative_ageing`.
+  - `binomial_ageing`: Select validators based on a binomial distribution of their stake and the duration they have not been selected.
+- `OUTPUT_MODE`: The mode to output the simulation results. Available options are:
+  - `console`: Display the results directly in the console.
+  - `file`: Save the results to a CSV file in the `output/` directory, with a timestamp.
+- `SEED`: The seed value for the random number generator used in the simulation.
 
-シミュレータの設定は、`config.py`ファイルで管理します。主な設定項目は以下の通りです：
+## Usage
+To run the simulation, follow these steps:
 
-- `EPOCHS`: シミュレーションを行うエポック数。
-- `AUTHORITY_COUNT`: 一つのエポックにおける権限バリデータの数。
-- `TOTAL_REWARD`: エポックごとの総報酬量。
-- `REWARD_RATIO`: Authority Validators と Candidate Validators 間での報酬分配比率。
-- `STAKE_DISTRIBUTION`: 初期ステーク分布。
-- `SELECTION_STRATEGY`: Authority validators の選択方法を指定できます。利用可能な選択戦略は以下の通りです：
-  - `stake`: ステーク量に基づいて上位のバリデータを選択します。
-  - `linear`: ステーク量に比例して確率的にバリデータを選出します。
-  - `random`: 完全にランダムにバリデータを選択します。ステーク量に関係なく、全バリデータが同じ確率で選出されます。
-  - `multiplicative_ageing`: ステーク量と stake ageing（選択されていない期間）の積に基づいてバリデータを選択します。
-  - `exponential_ageing`: ステーク量と stake ageing の指数関数に基づいてバリデータを選択します。`multiplicative_ageing`よりも ageing の影響度が高くなります。
-  - `binomial_ageing`: ステーク量と stake ageing に基づく二項分布を用いてバリデータを選択します。
-- `OUTPUT_MODE`: シミュレーション結果の出力モードを設定できます。利用可能な出力モードは以下の通りです。
-  - `console`: 結果をコンソールに直接出力します。簡易に結果を確認するのに適しています。
-  - `file`: 結果をファイルに出力します。出力は`output/`ディレクトリ内のタイムスタンプ付きの CSV ファイルに保存されます。データの後処理や分析を行いたい場合に使ってください。
-- `SEED`: シミュレーションの乱数生成のためのシード値。
-
-## 使い方
-
-シミュレーションを実行するには、以下の手順に従ってください：
-
-1. 必要なライブラリをインストールするために、`requirements.txt`ファイルを使用して依存関係をインストールします。
-
+1. Install the required dependencies using the `requirements.txt` file:
    ```
    pip install -r requirements.txt
    ```
-
-2. `config.py`ファイルを編集して、シミュレーションの設定を調整します。
-
-3. シミュレータを実行します。
-
+2. Modify the `config.py` file to adjust the simulation settings as needed.
+3. Run the simulator:
    ```
    python simulator.py
    ```
+4. The output mode can be set to either file or console. If file output is selected, the results will be saved as a CSV file in the `output/` directory with a timestamp.
 
-4. 出力モードをファイルまたは標準出力に設定することができます。ファイル出力を選択した場合、結果は `output/` ディレクトリ内のタイムスタンプ付きの CSV ファイルに保存されます。
+## Understanding the Simulation Results
+The simulation results can be interpreted as follows:
 
-## シミュレーション結果の読み方
-
-シミュレーションの結果は、選択した出力モードに応じて表示されます：
-
-- **ファイル出力**: `output/` ディレクトリに保存された CSV ファイルを開きます。ファイルには、シミュレーションの設定と、各エポックでのステーク分布が含まれています。
-- **標準出力**: コンソールに表示される出力から、各エポックごとのステーク分布を確認できます。
+- **File Output**: Open the CSV file saved in the `output/` directory. The file contains the simulation settings and the stake distribution at each epoch.
+- **Console Output**: The console output displays the stake distribution at each epoch.
