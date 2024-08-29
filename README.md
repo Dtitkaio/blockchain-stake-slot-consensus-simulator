@@ -1,4 +1,4 @@
-# Stake-and-slot-based Consensus Simulator for Proof of Stake and Authority (PoSA)
+# Consensus Mechanism Simulator for Evaluating Validator Selection Strategies and Stake Distribution
 
 This simulator is a tool that simulates the changes in stake distribution when using different authority validator selection algorithms in a stake-and-slot-based consensus mechanism. This simulator is a tool to analyze how different validator selection strategies impact the network's decentralization.
 
