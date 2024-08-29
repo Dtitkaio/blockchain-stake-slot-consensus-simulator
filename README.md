@@ -1,6 +1,6 @@
-# Consensus Simulator for Proof of Stake and Authority (PoSA)
+# Stake-and-slot-based Consensus Simulator for Proof of Stake and Authority (PoSA)
 
-The PoSA simulator is a tool that simulates the changes in stake distribution when using different authority validator selection algorithms in a Proof of Stake and Authority (PoSA) consensus mechanism. This simulator is a tool to analyze how different validator selection strategies impact the network's decentralization.
+This simulator is a tool that simulates the changes in stake distribution when using different authority validator selection algorithms in a stake-and-slot-based consensus mechanism. This simulator is a tool to analyze how different validator selection strategies impact the network's decentralization.
 
 ## Purpose
 The primary purpose of this simulator is to track the changes in validator stake over epochs and observe the impact that different validator selection strategies have on the stake distribution among validators.
